@@ -1,2 +1,2 @@
-# gubu-doc
-Generate documentation for Gubu specs.
+# gubu-gen
+Generate things from Gubu specs.
