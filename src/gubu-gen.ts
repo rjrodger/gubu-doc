@@ -5,31 +5,74 @@ import type { GubuShape, State } from 'gubu'
 import { Carn } from '@rjrodger/carn'
 
 
-function gen_GubuShape(gs: GubuShape, carn: Carn) {
-  carn.start()
-  gs(undefined, {
-    err: false,
-    log: (point: string, state: State) => {
-      if ('kv' === point) {
-        let path = state.path.slice(1, state.dI + 1).join('.')
-        let node = state.node
-        // console.log(state)
+type Generator = (gs: GubuShape, carn: Carn) => void
 
-        let type = node.t
-        let required = node.r
-        let dflt = node.v
 
-        let short = node.m?.short || state.key
-        carn.add(
-          `* ${path}: ${type} ` +
-          `${required ? '(required)' : '(default: ' + dflt + ')'} - ${short}`
-        )
+const MarkerMap: Record<string, string[]> = {
+  md: ['<!--', '-->']
+}
+
+const GeneratorMap: Record<string, Generator> = {
+  'options~md': function(gs: GubuShape, carn: Carn) {
+    carn.start()
+    carn.add('## Options')
+
+    let opts: any = []
+    gs(undefined, {
+      err: false,
+      log: (point: string, state: State) => {
+        if ('kv' === point) {
+          let parts = state.path.slice(1, state.dI + 1)
+          let path = parts.join('.')
+          let node = state.node
+          let key = state.key
+          opts.push({ path, parts, node, key })
+        }
       }
+    })
+
+    opts = opts.sort((a: any, b: any) => {
+      return a.path < b.path ? -1 : a.path > b.path ? 1 : 0
+    })
+
+
+    let depth = 1
+    for (let opt of opts) {
+      let { path, parts, node, key } = opt
+
+      let type = node.t
+      let required = node.r
+      let dflt = node.v
+
+      let short = node.m?.short || key
+
+      let lastpart = parts[parts.length - 1]
+
+      while (depth < parts.length) {
+        carn.add(`* _${parts[depth - 1]}_`)
+        carn.depth(1)
+        depth++
+      }
+
+      while (parts.length < depth) {
+        carn.depth(-1)
+        depth--
+      }
+
+      carn.add(
+        `* _${lastpart}_: \`${type}\` ` +
+        `${required ? '(required)' : '(default: ' + dflt + ')'} - ${short}`
+      )
     }
-  })
+  }
 }
 
 
+export type {
+  Generator
+}
+
 export {
-  gen_GubuShape
+  GeneratorMap,
+  MarkerMap,
 }

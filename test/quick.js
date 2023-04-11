@@ -3,7 +3,7 @@
 const { Gubu } = require('gubu')
 const { Carn } = require('@rjrodger/carn')
 
-const { gen_GubuShape } = require('..')
+const { GeneratorMap } = require('..')
 
 let gs0 = Gubu({
 
@@ -13,6 +13,6 @@ let gs0 = Gubu({
   b: 'B'
 })
 let c0 = new Carn()
-gen_GubuShape(gs0, c0)
+GeneratorMap['options~md'](gs0, c0)
 
 console.log(c0.src())

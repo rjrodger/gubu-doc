@@ -1,15 +1,23 @@
 /* Copyright (c) 2023 Richard Rodger, MIT License */
 
 import Path from 'path'
+import Fs from 'fs'
 
 import { Gubu } from 'gubu'
 import { Carn } from '@rjrodger/carn'
 import { util } from '@jsonic/jsonic-next'
 
-import { gen_GubuShape } from './gubu-gen'
+import type { Generator } from './gubu-gen'
+import { GeneratorMap, MarkerMap } from './gubu-gen'
 
 
 import type { GubuShape } from 'gubu'
+
+
+// Use in @jsonic/doc - define code api
+// Then use in seneca-doc
+// Move functions to main gubu-gen
+
 
 type Args = {
   errs: string[]
@@ -38,25 +46,27 @@ run(
 ).catch((e) => console.error(e))
 
 
-export async function run(argv: string[], ctx: Context) {
+export async function run(argv: string[], ctx: Context): Promise<Carn> {
   let args = handle_args(parse_args(argv), ctx)
 
   const mod = resolve_source(args, ctx)
-  const shape = resolve_shape(args, mod, ctx)
+  const target = resolve_target(args, ctx)
+  const shape = resolve_shape(args, ctx, mod)
+  const generate = resolve_generate(args, ctx)
 
   const carn = new Carn()
+  generate(shape, carn)
 
-  // NEXT: Gubu doc full feature
-  // NEXT: select generator function
-  // NEXT: inject into target
+  let text = load_file(target)
+  let out = carn.inject(text, args.generator, MarkerMap[args.format])
+  save_file(target, out)
 
-  gen_GubuShape(shape, carn)
-  console.log(carn.src())
+  return carn
 }
 
 
-function resolve_source(args: Args, ctx: Context): string {
 
+function resolve_source(args: Args, ctx: Context): string {
   try {
     let fullsource = args.source
     if (!Path.isAbsolute(fullsource)) {
@@ -66,13 +76,12 @@ function resolve_source(args: Args, ctx: Context): string {
   }
   catch (e: any) {
     args.errs.push(`Cannot load module (${args.source}): ` + e.message)
-    handle_errs(args, ctx)
-    return ''
+    return handle_errs(args, ctx)
   }
 }
 
 
-function resolve_shape(args: Args, mod: any, ctx: Context): GubuShape {
+function resolve_shape(args: Args, ctx: Context, mod: any): GubuShape {
   let origprop = args.property
 
   // Supports . paths
@@ -91,6 +100,52 @@ function resolve_shape(args: Args, mod: any, ctx: Context): GubuShape {
 }
 
 
+function resolve_generate(args: Args, ctx: Context): Generator {
+  let generator = args.generator
+  let format = args.format
+
+  let gen_name = generator + '~' + format
+  let gen_func = GeneratorMap[gen_name]
+
+  if (null === gen_func) {
+    args.errs.push(`Cannot find generator ${args.generator} for ` +
+      `format ${args.format}`)
+    return handle_errs(args, ctx)
+  }
+
+  return gen_func
+}
+
+
+function resolve_target(args: Args, ctx: Context): string {
+  try {
+    let fulltarget = args.target
+    if (null == fulltarget || '' === fulltarget) {
+      args.errs.push('Target is not defined')
+      return handle_errs(args, ctx)
+    }
+
+    if (!Path.isAbsolute(fulltarget)) {
+      fulltarget = Path.join(process.cwd(), fulltarget)
+    }
+    return fulltarget
+  }
+  catch (e: any) {
+    args.errs.push(`Cannot resolve target (${args.target}): ` + e.message)
+    return handle_errs(args, ctx)
+  }
+}
+
+
+function load_file(path: string) {
+  return Fs.readFileSync(path).toString()
+}
+
+function save_file(path: string, text: string) {
+  return Fs.writeFileSync(path, text)
+}
+
+
 function handle_args(args: any, ctx: Context) {
   // resolve file paths etc
 
@@ -105,7 +160,7 @@ function handle_args(args: any, ctx: Context) {
 }
 
 
-function handle_errs(args: any, ctx: Context) {
+function handle_errs(args: any, ctx: Context): any {
   if (0 < args.errs.length) {
     args.errs.map((err: string) => {
       console.log('ERROR: ' + err)
