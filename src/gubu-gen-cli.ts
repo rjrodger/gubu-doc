@@ -10,14 +10,12 @@ import { util } from '@jsonic/jsonic-next'
 import type { Generator } from './gubu-gen'
 import { GeneratorMap, MarkerMap } from './gubu-gen'
 
-
 import type { GubuShape } from 'gubu'
-
 
 // Use in @jsonic/doc - define code api
 // Then use in seneca-doc
 // Move functions to main gubu-gen
-
+// Proper Meta, suffix: $$
 
 type Args = {
   errs: string[]
@@ -29,22 +27,17 @@ type Args = {
   generator: string
 }
 
-
 type Exit = (exit_code: number) => void
 
 type Context = {
-  console: Console,
-  exit: Exit,
+  console: Console
+  exit: Exit
 }
 
-run(
-  process.argv,
-  {
-    console,
-    exit: (code: number) => process.exit(code)
-  }
-).catch((e) => console.error(e))
-
+run(process.argv, {
+  console,
+  exit: (code: number) => process.exit(code),
+}).catch((e) => console.error(e))
 
 export async function run(argv: string[], ctx: Context): Promise<Carn> {
   let args = handle_args(parse_args(argv), ctx)
@@ -64,8 +57,6 @@ export async function run(argv: string[], ctx: Context): Promise<Carn> {
   return carn
 }
 
-
-
 function resolve_source(args: Args, ctx: Context): string {
   try {
     let fullsource = args.source
@@ -73,13 +64,11 @@ function resolve_source(args: Args, ctx: Context): string {
       fullsource = Path.join(process.cwd(), fullsource)
     }
     return require(fullsource)
-  }
-  catch (e: any) {
+  } catch (e: any) {
     args.errs.push(`Cannot load module (${args.source}): ` + e.message)
     return handle_errs(args, ctx)
   }
 }
-
 
 function resolve_shape(args: Args, ctx: Context, mod: any): GubuShape {
   let origprop = args.property
@@ -88,17 +77,18 @@ function resolve_shape(args: Args, ctx: Context, mod: any): GubuShape {
   let ref = util.prop(mod, origprop, undefined)
 
   if (null == ref) {
-    args.errs.push('Cannot find shape at: ' + origprop + ' in file: ' + args.source)
+    args.errs.push(
+      'Cannot find shape at: ' + origprop + ' in file: ' + args.source
+    )
   }
 
   // FIX: should infer GubuShape
-  const shape = (Gubu(ref) as GubuShape)
+  const shape = Gubu(ref) as GubuShape
 
   handle_errs(args, ctx)
 
   return shape
 }
-
 
 function resolve_generate(args: Args, ctx: Context): Generator {
   let generator = args.generator
@@ -108,14 +98,14 @@ function resolve_generate(args: Args, ctx: Context): Generator {
   let gen_func = GeneratorMap[gen_name]
 
   if (null === gen_func) {
-    args.errs.push(`Cannot find generator ${args.generator} for ` +
-      `format ${args.format}`)
+    args.errs.push(
+      `Cannot find generator ${args.generator} for ` + `format ${args.format}`
+    )
     return handle_errs(args, ctx)
   }
 
   return gen_func
 }
-
 
 function resolve_target(args: Args, ctx: Context): string {
   try {
@@ -129,13 +119,11 @@ function resolve_target(args: Args, ctx: Context): string {
       fulltarget = Path.join(process.cwd(), fulltarget)
     }
     return fulltarget
-  }
-  catch (e: any) {
+  } catch (e: any) {
     args.errs.push(`Cannot resolve target (${args.target}): ` + e.message)
     return handle_errs(args, ctx)
   }
 }
-
 
 function load_file(path: string) {
   return Fs.readFileSync(path).toString()
@@ -144,7 +132,6 @@ function load_file(path: string) {
 function save_file(path: string, text: string) {
   return Fs.writeFileSync(path, text)
 }
-
 
 function handle_args(args: any, ctx: Context) {
   // resolve file paths etc
@@ -159,7 +146,6 @@ function handle_args(args: any, ctx: Context) {
   return args
 }
 
-
 function handle_errs(args: any, ctx: Context): any {
   if (0 < args.errs.length) {
     args.errs.map((err: string) => {
@@ -171,19 +157,17 @@ function handle_errs(args: any, ctx: Context): any {
   return args
 }
 
-
-
 function parse_args(argv: string[]) {
   const args = {
     // TODO: move to ctx
-    errs: ([] as string[]),
+    errs: [] as string[],
 
     help: false,
     source: '', // Source file containing GubuShape
     property: 'defaults', // Property path to GubuShape in required source file
     target: '', // Target file to update with generated code
     format: 'md', // Target file format
-    generator: 'options' // Code generator function
+    generator: 'options', // Code generator function
   }
 
   let accept_args = true
@@ -210,15 +194,13 @@ function parse_args(argv: string[]) {
       }
     } else if ('' === args.source) {
       args.source = arg
-    }
-    else {
+    } else {
       args.errs.push('Extra source file specified (only one is needed): ' + arg)
     }
   }
 
   return args
 }
-
 
 function help(ctx: Context) {
   let s = `
@@ -227,5 +209,3 @@ Help for gubu-gen.
 
   ctx.console.log(s)
 }
-
-

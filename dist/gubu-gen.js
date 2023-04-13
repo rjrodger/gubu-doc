@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MarkerMap = exports.GeneratorMap = void 0;
 const MarkerMap = {
-    md: ['<!--', '-->']
+    md: ['<!--', '-->'],
 };
 exports.MarkerMap = MarkerMap;
 const GeneratorMap = {
@@ -22,7 +22,7 @@ const GeneratorMap = {
                     let key = state.key;
                     opts.push({ path, parts, node, key });
                 }
-            }
+            },
         });
         opts = opts.sort((a, b) => {
             return a.path < b.path ? -1 : a.path > b.path ? 1 : 0;
@@ -47,7 +47,7 @@ const GeneratorMap = {
             carn.add(`* _${lastpart}_: \`${type}\` ` +
                 `${required ? '(required)' : '(default: ' + dflt + ')'} - ${short}`);
         }
-    }
+    },
 };
 exports.GeneratorMap = GeneratorMap;
 //# sourceMappingURL=gubu-gen.js.map

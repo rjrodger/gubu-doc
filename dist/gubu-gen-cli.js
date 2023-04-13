@@ -13,7 +13,7 @@ const jsonic_next_1 = require("@jsonic/jsonic-next");
 const gubu_gen_1 = require("./gubu-gen");
 run(process.argv, {
     console,
-    exit: (code) => process.exit(code)
+    exit: (code) => process.exit(code),
 }).catch((e) => console.error(e));
 async function run(argv, ctx) {
     let args = handle_args(parse_args(argv), ctx);
@@ -60,8 +60,7 @@ function resolve_generate(args, ctx) {
     let gen_name = generator + '~' + format;
     let gen_func = gubu_gen_1.GeneratorMap[gen_name];
     if (null === gen_func) {
-        args.errs.push(`Cannot find generator ${args.generator} for ` +
-            `format ${args.format}`);
+        args.errs.push(`Cannot find generator ${args.generator} for ` + `format ${args.format}`);
         return handle_errs(args, ctx);
     }
     return gen_func;
@@ -116,7 +115,7 @@ function parse_args(argv) {
         property: 'defaults',
         target: '',
         format: 'md',
-        generator: 'options' // Code generator function
+        generator: 'options', // Code generator function
     };
     let accept_args = true;
     for (let aI = 2; aI < argv.length; aI++) {
