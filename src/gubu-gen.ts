@@ -64,6 +64,14 @@ const GeneratorMap: Record<string, Generator> = {
   },
 }
 
+class GubuGen {
+  constructor() {}
+
+  generate(spec: any) {
+    console.log('GUBUGEN:', spec)
+  }
+}
+
 export type { Generator }
 
-export { GeneratorMap, MarkerMap }
+export { GubuGen, GeneratorMap, MarkerMap }

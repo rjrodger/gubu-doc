@@ -1,7 +1,7 @@
 "use strict";
 /* Copyright (c) 2023 Richard Rodger, MIT License */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.MarkerMap = exports.GeneratorMap = void 0;
+exports.MarkerMap = exports.GeneratorMap = exports.GubuGen = void 0;
 const MarkerMap = {
     md: ['<!--', '-->'],
 };
@@ -50,4 +50,11 @@ const GeneratorMap = {
     },
 };
 exports.GeneratorMap = GeneratorMap;
+class GubuGen {
+    constructor() { }
+    generate(spec) {
+        console.log('GUBUGEN:', spec);
+    }
+}
+exports.GubuGen = GubuGen;
 //# sourceMappingURL=gubu-gen.js.map
