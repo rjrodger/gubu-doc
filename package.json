@@ -1,6 +1,6 @@
 {
   "name": "gubu-gen",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Generate things from Gubu specs (Gubu is a JS schema validator).",
   "main": "dist/gubu-gen.js",
   "bin": {
@@ -35,9 +35,7 @@
     "gubu": "^4.0.0"
   },
   "files": [
-    "*.ts",
-    "*.js",
-    "*.map",
+    "dist",
     "LICENSE"
   ],
   "devDependencies": {
