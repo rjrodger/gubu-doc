@@ -1,5 +1,7 @@
 /* Copyright (c) 2023 Richard Rodger, MIT License */
 
+import Fs from 'fs'
+
 import type { GubuShape, State } from 'gubu'
 
 import { Carn } from '@rjrodger/carn'
@@ -15,10 +17,13 @@ const GeneratorMap: Record<string, Generator> = {
     carn.start()
     carn.add('## Options')
 
+    console.log('GS', gs)
+
     let opts: any = []
     gs(undefined, {
       err: false,
       log: (point: string, state: State) => {
+        console.log('POINT', point)
         if ('kv' === point) {
           let parts = state.path.slice(1, state.dI + 1)
           let path = parts.join('.')
@@ -32,6 +37,8 @@ const GeneratorMap: Record<string, Generator> = {
     opts = opts.sort((a: any, b: any) => {
       return a.path < b.path ? -1 : a.path > b.path ? 1 : 0
     })
+
+    console.log('OPTS', opts)
 
     let depth = 1
     for (let opt of opts) {
@@ -64,14 +71,59 @@ const GeneratorMap: Record<string, Generator> = {
   },
 }
 
+function resolve_generate(spec: GenerateSpec, ctx?: any): Generator {
+  let generator = spec.generator
+  let format = spec.format
+
+  let gen_name = generator + '~' + format
+  let gen_func = GeneratorMap[gen_name]
+
+  if (null === gen_func) {
+    let errmsg =
+      `Cannot find generator ${spec.generator} for ` + `format ${spec.format}`
+    if (ctx?.errs) {
+      ctx?.errs.push(errmsg)
+    } else {
+      throw new Error(errmsg)
+    }
+  }
+
+  return gen_func
+}
+
+type GenerateSpec = {
+  shape: GubuShape
+  generator: string
+  format: string
+  target: string
+}
+
 class GubuGen {
   constructor() {}
 
-  generate(spec: any) {
+  generate(spec: GenerateSpec) {
     console.log('GUBUGEN:', spec)
+
+    let genfunc = resolve_generate(spec)
+    const carn = new Carn()
+    genfunc(spec.shape, carn)
+
+    let text = load_file(spec.target)
+    let out = carn.inject(text, spec.generator, MarkerMap[spec.format])
+    save_file(spec.target, out)
+
+    return carn
   }
 }
 
-export type { Generator }
+function load_file(path: string) {
+  return Fs.readFileSync(path).toString()
+}
+
+function save_file(path: string, text: string) {
+  return Fs.writeFileSync(path, text)
+}
+
+export type { Generator, GenerateSpec }
 
 export { GubuGen, GeneratorMap, MarkerMap }

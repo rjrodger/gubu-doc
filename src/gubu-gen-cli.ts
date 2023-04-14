@@ -1,14 +1,13 @@
 /* Copyright (c) 2023 Richard Rodger, MIT License */
 
 import Path from 'path'
-import Fs from 'fs'
 
 import { Gubu } from 'gubu'
 import { Carn } from '@rjrodger/carn'
 import { util } from '@jsonic/jsonic-next'
 
-import type { Generator } from './gubu-gen'
-import { GeneratorMap, MarkerMap } from './gubu-gen'
+// import type { Generator } from './gubu-gen'
+import { GubuGen } from './gubu-gen'
 
 import type { GubuShape } from 'gubu'
 
@@ -45,16 +44,28 @@ export async function run(argv: string[], ctx: Context): Promise<Carn> {
   const mod = resolve_source(args, ctx)
   const target = resolve_target(args, ctx)
   const shape = resolve_shape(args, ctx, mod)
-  const generate = resolve_generate(args, ctx)
 
-  const carn = new Carn()
-  generate(shape, carn)
+  const gubugen = new GubuGen()
 
-  let text = load_file(target)
-  let out = carn.inject(text, args.generator, MarkerMap[args.format])
-  save_file(target, out)
+  const carn = gubugen.generate({
+    shape,
+    generator: args.generator,
+    format: args.format,
+    target,
+  })
 
   return carn
+
+  // const generate = resolve_generate(args, ctx)
+
+  // const carn = new Carn()
+  // generate(shape, carn)
+
+  // let text = load_file(target)
+  // let out = carn.inject(text, args.generator, MarkerMap[args.format])
+  // save_file(target, out)
+
+  // return carn
 }
 
 function resolve_source(args: Args, ctx: Context): string {
@@ -90,23 +101,6 @@ function resolve_shape(args: Args, ctx: Context, mod: any): GubuShape {
   return shape
 }
 
-function resolve_generate(args: Args, ctx: Context): Generator {
-  let generator = args.generator
-  let format = args.format
-
-  let gen_name = generator + '~' + format
-  let gen_func = GeneratorMap[gen_name]
-
-  if (null === gen_func) {
-    args.errs.push(
-      `Cannot find generator ${args.generator} for ` + `format ${args.format}`
-    )
-    return handle_errs(args, ctx)
-  }
-
-  return gen_func
-}
-
 function resolve_target(args: Args, ctx: Context): string {
   try {
     let fulltarget = args.target
@@ -123,14 +117,6 @@ function resolve_target(args: Args, ctx: Context): string {
     args.errs.push(`Cannot resolve target (${args.target}): ` + e.message)
     return handle_errs(args, ctx)
   }
-}
-
-function load_file(path: string) {
-  return Fs.readFileSync(path).toString()
-}
-
-function save_file(path: string, text: string) {
-  return Fs.writeFileSync(path, text)
 }
 
 function handle_args(args: any, ctx: Context) {

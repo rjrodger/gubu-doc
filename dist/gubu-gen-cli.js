@@ -6,10 +6,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = void 0;
 const path_1 = __importDefault(require("path"));
-const fs_1 = __importDefault(require("fs"));
 const gubu_1 = require("gubu");
-const carn_1 = require("@rjrodger/carn");
 const jsonic_next_1 = require("@jsonic/jsonic-next");
+// import type { Generator } from './gubu-gen'
 const gubu_gen_1 = require("./gubu-gen");
 run(process.argv, {
     console,
@@ -20,13 +19,21 @@ async function run(argv, ctx) {
     const mod = resolve_source(args, ctx);
     const target = resolve_target(args, ctx);
     const shape = resolve_shape(args, ctx, mod);
-    const generate = resolve_generate(args, ctx);
-    const carn = new carn_1.Carn();
-    generate(shape, carn);
-    let text = load_file(target);
-    let out = carn.inject(text, args.generator, gubu_gen_1.MarkerMap[args.format]);
-    save_file(target, out);
+    const gubugen = new gubu_gen_1.GubuGen();
+    const carn = gubugen.generate({
+        shape,
+        generator: args.generator,
+        format: args.format,
+        target,
+    });
     return carn;
+    // const generate = resolve_generate(args, ctx)
+    // const carn = new Carn()
+    // generate(shape, carn)
+    // let text = load_file(target)
+    // let out = carn.inject(text, args.generator, MarkerMap[args.format])
+    // save_file(target, out)
+    // return carn
 }
 exports.run = run;
 function resolve_source(args, ctx) {
@@ -54,17 +61,6 @@ function resolve_shape(args, ctx, mod) {
     handle_errs(args, ctx);
     return shape;
 }
-function resolve_generate(args, ctx) {
-    let generator = args.generator;
-    let format = args.format;
-    let gen_name = generator + '~' + format;
-    let gen_func = gubu_gen_1.GeneratorMap[gen_name];
-    if (null === gen_func) {
-        args.errs.push(`Cannot find generator ${args.generator} for ` + `format ${args.format}`);
-        return handle_errs(args, ctx);
-    }
-    return gen_func;
-}
 function resolve_target(args, ctx) {
     try {
         let fulltarget = args.target;
@@ -81,12 +77,6 @@ function resolve_target(args, ctx) {
         args.errs.push(`Cannot resolve target (${args.target}): ` + e.message);
         return handle_errs(args, ctx);
     }
-}
-function load_file(path) {
-    return fs_1.default.readFileSync(path).toString();
-}
-function save_file(path, text) {
-    return fs_1.default.writeFileSync(path, text);
 }
 function handle_args(args, ctx) {
     // resolve file paths etc

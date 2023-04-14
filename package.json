@@ -1,6 +1,6 @@
 {
   "name": "gubu-gen",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Generate things from Gubu specs (Gubu is a JS schema validator).",
   "main": "dist/gubu-gen.js",
   "bin": {
@@ -31,8 +31,8 @@
   "homepage": "https://github.com/rjrodger/gubu-doc#readme",
   "dependencies": {
     "@jsonic/jsonic-next": "^2.10.0",
-    "@rjrodger/carn": "^0.0.4",
-    "gubu": "^4.0.0"
+    "@rjrodger/carn": "^0.0.5",
+    "gubu": "^5.0.0"
   },
   "files": [
     "dist",
@@ -42,10 +42,10 @@
     "@types/jest": "^29.5.0",
     "browserify": "^17.0.0",
     "es-jest": "^2.1.0",
-    "esbuild": "^0.17.15",
+    "esbuild": "^0.17.16",
     "jest": "^29.5.0",
     "prettier": "^2.8.7",
     "tinyify": "^4.0.0",
-    "typescript": "^5.0.3"
+    "typescript": "^5.0.4"
   }
 }
