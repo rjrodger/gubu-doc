@@ -17,13 +17,13 @@ const GeneratorMap: Record<string, Generator> = {
     carn.start()
     carn.add('## Options')
 
-    console.log('GS', gs)
+    // console.log('GS', gs)
 
     let opts: any = []
     gs(undefined, {
       err: false,
       log: (point: string, state: State) => {
-        console.log('POINT', point)
+        // console.log('POINT', point)
         if ('kv' === point) {
           let parts = state.path.slice(1, state.dI + 1)
           let path = parts.join('.')
@@ -38,7 +38,7 @@ const GeneratorMap: Record<string, Generator> = {
       return a.path < b.path ? -1 : a.path > b.path ? 1 : 0
     })
 
-    console.log('OPTS', opts)
+    // console.log('OPTS', opts)
 
     let depth = 1
     for (let opt of opts) {
@@ -65,7 +65,7 @@ const GeneratorMap: Record<string, Generator> = {
 
       carn.add(
         `* _${lastpart}_: \`${type}\` ` +
-          `${required ? '(required)' : '(default: ' + dflt + ')'} - ${short}`
+          `${required ? '(required)' : '(default: ' + dflt + ')'} - ${short}`,
       )
     }
   },
@@ -102,7 +102,7 @@ class GubuGen {
   constructor() {}
 
   generate(spec: GenerateSpec) {
-    console.log('GUBUGEN:', spec)
+    // console.log('GUBUGEN:', spec)
 
     let genfunc = resolve_generate(spec)
     const carn = new Carn()

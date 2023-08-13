@@ -16,12 +16,12 @@ const GeneratorMap = {
         var _a;
         carn.start();
         carn.add('## Options');
-        console.log('GS', gs);
+        // console.log('GS', gs)
         let opts = [];
         gs(undefined, {
             err: false,
             log: (point, state) => {
-                console.log('POINT', point);
+                // console.log('POINT', point)
                 if ('kv' === point) {
                     let parts = state.path.slice(1, state.dI + 1);
                     let path = parts.join('.');
@@ -34,7 +34,7 @@ const GeneratorMap = {
         opts = opts.sort((a, b) => {
             return a.path < b.path ? -1 : a.path > b.path ? 1 : 0;
         });
-        console.log('OPTS', opts);
+        // console.log('OPTS', opts)
         let depth = 1;
         for (let opt of opts) {
             let { path, parts, node, key } = opt;
@@ -77,7 +77,7 @@ function resolve_generate(spec, ctx) {
 class GubuGen {
     constructor() { }
     generate(spec) {
-        console.log('GUBUGEN:', spec);
+        // console.log('GUBUGEN:', spec)
         let genfunc = resolve_generate(spec);
         const carn = new carn_1.Carn();
         genfunc(spec.shape, carn);

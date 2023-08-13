@@ -89,7 +89,7 @@ function resolve_shape(args: Args, ctx: Context, mod: any): GubuShape {
 
   if (null == ref) {
     args.errs.push(
-      'Cannot find shape at: ' + origprop + ' in file: ' + args.source
+      'Cannot find shape at: ' + origprop + ' in file: ' + args.source,
     )
   }
 
