@@ -21,8 +21,8 @@ const GeneratorMap = {
         gs(undefined, {
             err: false,
             log: (point, state) => {
-                // console.log('POINT', point)
-                if ('kv' === point) {
+                // console.log('POINT', point, state)
+                if ('kv' === point && 'string' === typeof state.key) {
                     let parts = state.path.slice(1, state.dI + 1);
                     let path = parts.join('.');
                     let node = state.node;
@@ -31,29 +31,34 @@ const GeneratorMap = {
                 }
             },
         });
-        opts = opts.sort((a, b) => {
-            return a.path < b.path ? -1 : a.path > b.path ? 1 : 0;
-        });
-        // console.log('OPTS', opts)
-        let depth = 1;
-        for (let opt of opts) {
-            let { path, parts, node, key } = opt;
-            let type = node.t;
-            let required = node.r;
-            let dflt = node.v;
-            let short = ((_a = node.m) === null || _a === void 0 ? void 0 : _a.short) || key;
-            let lastpart = parts[parts.length - 1];
-            while (depth < parts.length) {
-                carn.add(`* _${parts[depth - 1]}_`);
-                carn.depth(1);
-                depth++;
+        if (0 < opts.length) {
+            opts = opts.sort((a, b) => {
+                return a.path < b.path ? -1 : a.path > b.path ? 1 : 0;
+            });
+            // console.log('OPTS', opts)
+            let depth = 1;
+            for (let opt of opts) {
+                let { path, parts, node, key } = opt;
+                let type = node.t;
+                let required = node.r;
+                let dflt = node.v;
+                let short = ((_a = node.m) === null || _a === void 0 ? void 0 : _a.short) || key;
+                let lastpart = parts[parts.length - 1];
+                while (depth < parts.length) {
+                    carn.add(`* _${parts[depth - 1]}_`);
+                    carn.depth(1);
+                    depth++;
+                }
+                while (parts.length < depth) {
+                    carn.depth(-1);
+                    depth--;
+                }
+                carn.add(`* _${lastpart}_: \`${type}\` ` +
+                    `${required ? '(required)' : '(default: ' + dflt + ')'} - ${short}`);
             }
-            while (parts.length < depth) {
-                carn.depth(-1);
-                depth--;
-            }
-            carn.add(`* _${lastpart}_: \`${type}\` ` +
-                `${required ? '(required)' : '(default: ' + dflt + ')'} - ${short}`);
+        }
+        else {
+            carn.add('_None_');
         }
     },
 };
