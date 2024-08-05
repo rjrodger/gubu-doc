@@ -4,7 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.run = void 0;
+exports.run = run;
 const path_1 = __importDefault(require("path"));
 const gubu_1 = require("gubu");
 const jsonic_next_1 = require("@jsonic/jsonic-next");
@@ -35,7 +35,6 @@ async function run(argv, ctx) {
     // save_file(target, out)
     // return carn
 }
-exports.run = run;
 function resolve_source(args, ctx) {
     try {
         let fullsource = args.source;
@@ -101,10 +100,10 @@ function parse_args(argv) {
         // TODO: move to ctx
         errs: [],
         help: false,
-        source: '',
-        property: 'defaults',
-        target: '',
-        format: 'md',
+        source: '', // Source file containing GubuShape
+        property: 'defaults', // Property path to GubuShape in required source file
+        target: '', // Target file to update with generated code
+        format: 'md', // Target file format
         generator: 'options', // Code generator function
     };
     let accept_args = true;
